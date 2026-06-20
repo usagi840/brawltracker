@@ -1,12 +1,12 @@
 /* ============================================================
    TROPHY TRACKER — style.css
-   Thème repris de Tark : fond crème, accent orange,
-   typographie Outfit / Fraunces, cards blanches.
+   Fond crème, accent orange, titres en Lilita One,
+   texte courant en Outfit, cards blanches arrondies.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,600;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Lilita+One&display=swap');
 
-/* ── Variables (identiques à Tark) ── */
+/* ── Variables ── */
 :root {
   --bg:        #f6f5f0;
   --bg2:       #eeede7;
@@ -25,11 +25,11 @@
   --red:       #e84040;
   --red-bg:    rgba(232, 64, 64, 0.08);
   --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
-  --shadow:    0 2px 8px rgba(0,0,0,.07), 0 0 0 1px rgba(0,0,0,.04);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
-  --r:         14px;
-  --r-sm:      10px;
-  --font-display: 'Fraunces', serif;
+  --shadow:    0 3px 10px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.03);
+  --shadow-lg: 0 10px 36px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+  --r:         18px;
+  --r-sm:      11px;
+  --font-display: 'Lilita One', sans-serif;
   --font-body:    'Outfit', sans-serif;
 }
 
@@ -53,7 +53,7 @@ html, body {
 .mt-8  { margin-top: 8px; }
 
 /* ============================================================
-   ÉCRAN SETUP (auth-like, façon Tark)
+   ÉCRAN SETUP
    ============================================================ */
 #screenSetup {
   min-height: 100vh;
@@ -74,11 +74,11 @@ html, body {
 .auth-brand { text-align: center; margin-bottom: 28px; }
 .auth-brand .brand-name {
   font-family: var(--font-display);
-  font-size: 2.4rem; font-weight: 600;
-  color: var(--text); letter-spacing: -1px; line-height: 1;
+  font-size: 1.9rem;
+  color: var(--text); letter-spacing: .5px; line-height: 1.15;
 }
-.auth-brand .brand-name span { color: var(--accent); font-style: italic; }
-.auth-brand p { font-size: .88rem; color: var(--text2); margin-top: 8px; }
+.auth-brand .brand-name span { color: var(--accent); }
+.auth-brand p { font-size: .88rem; color: var(--text2); margin-top: 10px; }
 
 /* ============================================================
    CARDS
@@ -95,12 +95,17 @@ html, body {
 
 .card-title {
   font-family: var(--font-display);
-  font-size: 1.05rem; font-weight: 600;
+  font-size: .85rem; letter-spacing: .3px;
   color: var(--text);
   margin-bottom: 16px;
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 9px;
 }
-.card-title .icon { font-size: 1.1rem; }
+.card-title .icon {
+  width: 28px; height: 28px; border-radius: 9px;
+  background: var(--accentbg);
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .95rem; flex-shrink: 0;
+}
 
 /* ============================================================
    SETUP : champs
@@ -132,7 +137,7 @@ html, body {
 .input-prefix {
   padding: 0 6px 0 14px;
   font-family: var(--font-display);
-  font-size: 1.3rem; font-weight: 600; color: var(--accent);
+  font-size: 1.15rem; color: var(--accent);
   line-height: 1;
 }
 
@@ -193,13 +198,13 @@ html, body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ============================================================
-   BOUTONS (style Tark : btn-main / btn-ghost / accent)
+   BOUTONS
    ============================================================ */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  border: none; border-radius: var(--r-sm); cursor: pointer;
+  border: none; border-radius: 99px; cursor: pointer;
   font-family: var(--font-body); font-weight: 600; font-size: .95rem;
-  padding: 13px 20px;
+  padding: 13px 22px;
   transition: all .2s;
   -webkit-tap-highlight-color: transparent;
   width: 100%;
@@ -237,7 +242,7 @@ html, body {
 .btn-sm { padding: 9px 14px; font-size: .85rem; width: auto; }
 
 /* ============================================================
-   APP SHELL — TOPBAR (façon Tark)
+   APP SHELL — TOPBAR
    ============================================================ */
 #app { display: flex; flex-direction: column; min-height: 100vh; }
 
@@ -251,10 +256,10 @@ html, body {
 }
 .brand {
   font-family: var(--font-display);
-  font-size: 1.35rem; font-weight: 600;
-  color: var(--text); letter-spacing: -.5px;
+  font-size: 1.1rem;
+  color: var(--text); letter-spacing: .2px;
 }
-.brand span { color: var(--accent); font-style: italic; }
+.brand span { color: var(--accent); }
 
 .topbar-r { display: flex; align-items: center; gap: 10px; }
 
@@ -263,7 +268,7 @@ html, body {
   border: 2px solid var(--border);
   background: var(--bg2);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: .9rem;
+  font-family: var(--font-display); font-size: .85rem;
   color: var(--text2);
 }
 
@@ -314,7 +319,7 @@ html, body {
   background: var(--accentbg);
   border: 2px solid var(--border);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display); font-weight: 700; font-size: 1.3rem;
+  font-family: var(--font-display); font-size: 1.15rem;
   color: var(--accent);
   flex-shrink: 0;
 }
@@ -322,15 +327,15 @@ html, body {
 .player-info { flex: 1; min-width: 0; }
 .player-name {
   font-family: var(--font-display);
-  font-size: 1.1rem; font-weight: 600; color: var(--text);
+  font-size: .95rem; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.player-tag { font-size: .8rem; color: var(--text3); margin-top: 1px; }
+.player-tag { font-size: .8rem; color: var(--text3); margin-top: 2px; }
 
 .player-right { text-align: right; flex-shrink: 0; }
 .player-trophies {
   font-family: var(--font-display);
-  font-size: 1.5rem; font-weight: 700; color: var(--accent);
+  font-size: 1.3rem; color: var(--accent);
   line-height: 1;
 }
 .player-trophies-label {
@@ -353,7 +358,7 @@ html, body {
   display: flex; flex-direction: column; gap: 4px;
 }
 .stat-label { font-size: .68rem; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
-.stat-value { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.stat-value { font-family: var(--font-display); font-size: 1.05rem; color: var(--text); }
 
 .progress-bar-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .progress-bar-track {
@@ -366,7 +371,7 @@ html, body {
   width: 0%; transition: width .4s ease;
 }
 .progress-bar-label {
-  font-family: var(--font-display); font-size: .85rem; font-weight: 700;
+  font-family: var(--font-display); font-size: .8rem;
   color: var(--accent); min-width: 36px; text-align: right;
 }
 
@@ -376,7 +381,7 @@ html, body {
   padding: 11px 13px;
 }
 .goal-recap-item { font-size: .8rem; color: var(--text2); flex: 1; min-width: 120px; }
-.goal-recap-item strong { color: var(--accent); font-family: var(--font-display); font-size: .95rem; }
+.goal-recap-item strong { color: var(--accent); font-family: var(--font-display); font-size: .85rem; }
 
 /* ============================================================
    CALENDRIER
@@ -413,7 +418,7 @@ html, body {
 /* Numéro du jour */
 .day-number {
   font-family: var(--font-display);
-  font-size: .9rem; font-weight: 700; color: var(--text3);
+  font-size: .78rem; color: var(--text3);
   min-width: 28px; text-align: center;
 }
 .day-row.success .day-number,
@@ -425,11 +430,11 @@ html, body {
 
 .day-trophies {
   font-family: var(--font-display);
-  font-size: 1.05rem; font-weight: 700; color: var(--text);
+  font-size: .92rem; color: var(--text);
   line-height: 1;
 }
 
-.day-date { font-size: .74rem; color: var(--text3); margin-top: 2px; }
+.day-date { font-size: .74rem; color: var(--text3); margin-top: 3px; }
 
 /* Placeholder jours futurs */
 .day-placeholder { font-size: .85rem; color: var(--text3); font-style: italic; }
@@ -437,7 +442,7 @@ html, body {
 /* Badge différence */
 .day-diff {
   font-family: var(--font-display);
-  font-size: .9rem; font-weight: 700;
+  font-size: .78rem;
   min-width: 58px; text-align: right;
 }
 .day-diff.positive { color: var(--green); }
@@ -456,8 +461,8 @@ html, body {
 
 .bilan-result {
   font-family: var(--font-display);
-  font-size: 2.6rem; font-weight: 700; line-height: 1;
-  margin-bottom: 6px;
+  font-size: 2.1rem; line-height: 1.1;
+  margin-bottom: 8px;
 }
 .bilan-result.success { color: var(--green); }
 .bilan-result.fail    { color: var(--red); }
@@ -477,7 +482,7 @@ html, body {
 .bilan-row { display: flex; justify-content: space-between; align-items: center; font-size: .85rem; }
 .bilan-row .b-label { color: var(--text2); font-weight: 500; }
 .bilan-row .b-value {
-  font-family: var(--font-display); font-size: 1rem; font-weight: 700; color: var(--text);
+  font-family: var(--font-display); font-size: .85rem; color: var(--text);
 }
 .bilan-row .b-value.success { color: var(--green); }
 .bilan-row .b-value.fail    { color: var(--red); }
@@ -498,7 +503,7 @@ html, body {
 .reset-warning { font-size: .75rem; color: var(--text3); margin-top: 8px; }
 
 /* ============================================================
-   BOTTOM NAV (façon Tark)
+   BOTTOM NAV
    ============================================================ */
 .bnav {
   display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 62px;
@@ -540,8 +545,8 @@ html, body {
 
 .modal-title {
   font-family: var(--font-display);
-  font-size: 1.2rem; font-weight: 600; color: var(--text);
-  margin-bottom: 8px; text-align: center;
+  font-size: 1rem; color: var(--text);
+  margin-bottom: 10px; text-align: center;
 }
 
 .modal-text {
@@ -576,9 +581,9 @@ html, body {
    RESPONSIVE
    ============================================================ */
 @media (max-width: 360px) {
-  .auth-brand .brand-name { font-size: 2rem; }
+  .auth-brand .brand-name { font-size: 1.6rem; }
   .progress-grid          { grid-template-columns: 1fr; }
-  .day-diff               { min-width: 48px; font-size: .8rem; }
-  .player-trophies        { font-size: 1.3rem; }
+  .day-diff               { min-width: 48px; font-size: .72rem; }
+  .player-trophies        { font-size: 1.15rem; }
   .bnav-btn               { padding: 8px 16px; }
 }
