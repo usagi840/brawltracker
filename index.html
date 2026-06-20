@@ -3,173 +3,216 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>BS Trophy Tracker</title>
+  <title>Trophy Tracker</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <!-- ===== HEADER ===== -->
-  <header class="app-header">
-    <div class="header-glow"></div>
-    <div class="header-content">
-      <span class="trophy-icon">🏆</span>
-      <div class="header-text">
-        <h1>TROPHY TRACKER</h1>
-        <p class="header-sub" id="headerSub">Brawl Stars · Rush 30 Jours</p>
-      </div>
-      <span class="trophy-icon">🏆</span>
-    </div>
-    <!-- Indicateur de statut API -->
-    <div class="api-status" id="apiStatus">
-      <span class="api-dot" id="apiDot"></span>
-      <span class="api-label" id="apiLabel">En attente</span>
-    </div>
-  </header>
 
   <!-- ===================================================================
        ÉCRAN 1 : CONFIGURATION INITIALE (visible si défi non démarré)
   =================================================================== -->
   <div id="screenSetup">
+    <div class="auth-wrap">
+      <div class="auth-brand">
+        <div class="brand-name">Trophy<span>Tracker</span></div>
+        <p>Brawl Stars · Rush 30 jours</p>
+      </div>
 
-    <section class="card setup-card">
-      <h2 class="card-title"><span class="icon">⚙️</span> Configuration du Défi</h2>
+      <section class="card setup-card">
+        <h2 class="card-title"><span class="icon">⚙️</span> Configuration du défi</h2>
 
-      <!-- Tag joueur -->
-      <div class="input-group">
-        <label for="inputPlayerTag">Tag Joueur Brawl Stars</label>
-        <div class="input-prefix-wrap">
-          <span class="input-prefix">#</span>
-          <input
-            type="text"
-            id="inputPlayerTag"
-            placeholder="XXXXXX"
-            maxlength="12"
-            autocomplete="off"
-            autocorrect="off"
-            spellcheck="false"
-          />
+        <!-- Tag joueur -->
+        <div class="input-group">
+          <label for="inputPlayerTag">Tag joueur Brawl Stars</label>
+          <div class="input-prefix-wrap">
+            <span class="input-prefix">#</span>
+            <input
+              type="text"
+              id="inputPlayerTag"
+              placeholder="XXXXXX"
+              maxlength="12"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+            />
+          </div>
+          <p class="input-hint">Trouve ton tag dans le jeu → Profil → #TAG</p>
         </div>
-        <p class="input-hint">Trouve ton tag dans le jeu → Profil → #TAG</p>
-      </div>
 
-      <!-- Objectif quotidien -->
-      <div class="input-group">
-        <label for="inputDailyGoal">Objectif quotidien (trophées / jour)</label>
-        <input
-          type="number"
-          id="inputDailyGoal"
-          placeholder="1000"
-          value="1000"
-          min="1"
-          inputmode="numeric"
-        />
-        <p class="input-hint">Par défaut : 1000 · Objectif total = × 30 jours</p>
-      </div>
+        <!-- Objectif quotidien -->
+        <div class="input-group">
+          <label for="inputDailyGoal">Objectif quotidien (trophées / jour)</label>
+          <input
+            type="number"
+            id="inputDailyGoal"
+            placeholder="1000"
+            value="1000"
+            min="1"
+            inputmode="numeric"
+          />
+          <p class="input-hint">Par défaut : 1000 · Objectif total = × 30 jours</p>
+        </div>
 
-      <!-- Bouton démarrer -->
-      <button class="btn btn-primary" id="btnStart">
-        <span id="btnStartLabel">🚀 Démarrer le défi</span>
-      </button>
+        <!-- Bouton démarrer -->
+        <button class="btn btn-main" id="btnStart">
+          <span id="btnStartLabel">🚀 Démarrer le défi</span>
+        </button>
 
-      <!-- Spinner de chargement -->
-      <div class="loader-wrap hidden" id="setupLoader">
-        <div class="spinner"></div>
-        <span>Connexion à l'API Brawl Stars…</span>
-      </div>
-    </section>
-
+        <!-- Spinner de chargement -->
+        <div class="loader-wrap hidden" id="setupLoader">
+          <div class="spinner"></div>
+          <span>Connexion à l'API Brawl Stars…</span>
+        </div>
+      </section>
+    </div>
   </div><!-- /#screenSetup -->
 
   <!-- ===================================================================
-       ÉCRAN 2 : TRACKER ACTIF (visible une fois le défi lancé)
+       APP : visible une fois le défi lancé
   =================================================================== -->
-  <div id="screenTracker" class="hidden">
+  <div id="app" class="hidden">
 
-    <!-- ── Profil joueur ── -->
-    <section class="card player-card">
-      <div class="player-row">
-        <div class="player-avatar" id="playerAvatar">?</div>
-        <div class="player-info">
-          <div class="player-name" id="playerName">—</div>
-          <div class="player-tag" id="playerTag">—</div>
+    <!-- ===== TOPBAR ===== -->
+    <div class="topbar">
+      <div class="brand">Trophy<span>Tracker</span></div>
+      <div class="topbar-r">
+        <div class="api-status" id="apiStatus">
+          <span class="api-dot" id="apiDot"></span>
+          <span class="api-label" id="apiLabel">En attente</span>
         </div>
-        <div class="player-right">
-          <div class="player-trophies" id="playerTrophiesLive">—</div>
-          <div class="player-trophies-label">trophées</div>
-        </div>
+        <div class="top-av" id="playerAvatar">?</div>
       </div>
-
-      <!-- Bouton actualisation manuelle -->
-      <button class="btn btn-secondary btn-sm mt-8" id="btnRefresh">
-        🔄 Actualiser maintenant
-      </button>
-
-      <!-- Date dernière sync -->
-      <p class="last-sync" id="lastSyncLabel">Dernière sync : jamais</p>
-    </section>
-
-    <!-- ── Progression globale ── -->
-    <section class="card progress-card">
-      <h2 class="card-title"><span class="icon">📊</span> Progression Globale</h2>
-
-      <div class="progress-grid">
-        <div class="stat-box">
-          <span class="stat-label">Jour actuel</span>
-          <span class="stat-value" id="statCurrentDay">J—</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Jours validés</span>
-          <span class="stat-value" id="statDaysCompleted">0 / 30</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Gain total</span>
-          <span class="stat-value" id="statTotalGain">+0</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-label">Moy. / jour</span>
-          <span class="stat-value" id="statAvgPerDay">—</span>
-        </div>
-      </div>
-
-      <div class="progress-bar-wrap">
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" id="progressBarFill"></div>
-        </div>
-        <span class="progress-bar-label" id="progressBarLabel">0%</span>
-      </div>
-
-      <!-- Objectif affiché -->
-      <div class="goal-recap">
-        <span class="goal-recap-item">
-          🎯 Objectif : <strong id="goalRecapValue">—</strong> trophées/jour
-        </span>
-        <span class="goal-recap-item">
-          📅 Total visé : <strong id="goalTotalValue">—</strong>
-        </span>
-      </div>
-    </section>
-
-    <!-- ── Calendrier des 30 jours ── -->
-    <section class="card calendar-card">
-      <h2 class="card-title"><span class="icon">📅</span> Calendrier des 30 Jours</h2>
-      <div class="calendar-list" id="calendarList">
-        <!-- Généré dynamiquement par JS -->
-      </div>
-    </section>
-
-    <!-- ── Bilan de fin de mois ── -->
-    <section class="card bilan-card hidden" id="bilanSection">
-      <h2 class="card-title"><span class="icon">🏁</span> Bilan de Fin de Mois</h2>
-      <div class="bilan-body" id="bilanBody"></div>
-    </section>
-
-    <!-- ── Reset ── -->
-    <div class="reset-zone">
-      <button class="btn btn-danger" id="resetBtn">🔄 Réinitialiser le mois</button>
-      <p class="reset-warning">⚠️ Cette action effacera toutes tes données.</p>
     </div>
 
-  </div><!-- /#screenTracker -->
+    <div class="main">
+      <div class="feed">
+
+        <!-- ===================================================
+             PAGE : ACCUEIL
+        ==================================================== -->
+        <div class="page active" id="page-accueil">
+
+          <!-- ── Profil joueur ── -->
+          <section class="card player-card">
+            <div class="player-row">
+              <div class="player-avatar-lg" id="playerAvatarLg">?</div>
+              <div class="player-info">
+                <div class="player-name" id="playerName">—</div>
+                <div class="player-tag" id="playerTag">—</div>
+              </div>
+              <div class="player-right">
+                <div class="player-trophies" id="playerTrophiesLive">—</div>
+                <div class="player-trophies-label">trophées</div>
+              </div>
+            </div>
+
+            <!-- Bouton actualisation manuelle -->
+            <button class="btn btn-ghost btn-sm mt-8" id="btnRefresh">
+              🔄 Actualiser maintenant
+            </button>
+
+            <!-- Date dernière sync -->
+            <p class="last-sync" id="lastSyncLabel">Dernière sync : jamais</p>
+          </section>
+
+          <!-- ── Progression globale ── -->
+          <section class="card progress-card">
+            <h2 class="card-title"><span class="icon">📊</span> Progression globale</h2>
+
+            <div class="progress-grid">
+              <div class="stat-box">
+                <span class="stat-label">Jour actuel</span>
+                <span class="stat-value" id="statCurrentDay">J—</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Jours validés</span>
+                <span class="stat-value" id="statDaysCompleted">0 / 30</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Gain total</span>
+                <span class="stat-value" id="statTotalGain">+0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Moy. / jour</span>
+                <span class="stat-value" id="statAvgPerDay">—</span>
+              </div>
+            </div>
+
+            <div class="progress-bar-wrap">
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" id="progressBarFill"></div>
+              </div>
+              <span class="progress-bar-label" id="progressBarLabel">0%</span>
+            </div>
+
+            <!-- Objectif affiché -->
+            <div class="goal-recap">
+              <span class="goal-recap-item">
+                🎯 Objectif : <strong id="goalRecapValue">—</strong> trophées/jour
+              </span>
+              <span class="goal-recap-item">
+                📅 Total visé : <strong id="goalTotalValue">—</strong>
+              </span>
+            </div>
+          </section>
+
+        </div><!-- /#page-accueil -->
+
+        <!-- ===================================================
+             PAGE : CALENDRIER
+        ==================================================== -->
+        <div class="page" id="page-calendrier">
+          <section class="card calendar-card">
+            <h2 class="card-title"><span class="icon">📅</span> Calendrier des 30 jours</h2>
+            <div class="calendar-list" id="calendarList">
+              <!-- Généré dynamiquement par JS -->
+            </div>
+          </section>
+        </div><!-- /#page-calendrier -->
+
+        <!-- ===================================================
+             PAGE : BILAN
+        ==================================================== -->
+        <div class="page" id="page-bilan">
+
+          <section class="card bilan-card hidden" id="bilanSection">
+            <h2 class="card-title"><span class="icon">🏁</span> Bilan de fin de mois</h2>
+            <div class="bilan-body" id="bilanBody"></div>
+          </section>
+
+          <section class="card bilan-empty" id="bilanEmptyCard">
+            <span class="bilan-empty-emoji">⏳</span>
+            <p>Le bilan apparaîtra ici une fois les 30 jours terminés.</p>
+          </section>
+
+          <!-- ── Reset ── -->
+          <div class="reset-zone">
+            <button class="btn btn-danger" id="resetBtn">🔄 Réinitialiser le mois</button>
+            <p class="reset-warning">⚠️ Cette action effacera toutes tes données.</p>
+          </div>
+
+        </div><!-- /#page-bilan -->
+
+      </div><!-- /.feed -->
+    </div><!-- /.main -->
+
+    <!-- ===== BOTTOM NAV ===== -->
+    <nav class="bnav">
+      <button class="bnav-btn active" id="bnav-accueil">
+        <svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+        Accueil
+      </button>
+      <button class="bnav-btn" id="bnav-calendrier">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendrier
+      </button>
+      <button class="bnav-btn" id="bnav-bilan">
+        <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+        Bilan
+      </button>
+    </nav>
+
+  </div><!-- /#app -->
 
   <!-- ===== MODAL RESET ===== -->
   <div class="modal-overlay hidden" id="resetModal">

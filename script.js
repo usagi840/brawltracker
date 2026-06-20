@@ -39,11 +39,11 @@ const el = {
   btnStart:       $('btnStart'),
   btnStartLabel:  $('btnStartLabel'),
   setupLoader:    $('setupLoader'),
-  screenTracker:  $('screenTracker'),
-  headerSub:      $('headerSub'),
+  app:            $('app'),
   apiDot:         $('apiDot'),
   apiLabel:       $('apiLabel'),
   playerAvatar:   $('playerAvatar'),
+  playerAvatarLg: $('playerAvatarLg'),
   playerName:     $('playerName'),
   playerTag:      $('playerTag'),
   playerTrLive:   $('playerTrophiesLive'),
@@ -59,12 +59,15 @@ const el = {
   goalTotal:      $('goalTotalValue'),
   calendarList:   $('calendarList'),
   bilanSection:   $('bilanSection'),
+  bilanEmptyCard: $('bilanEmptyCard'),
   bilanBody:      $('bilanBody'),
   resetBtn:       $('resetBtn'),
   resetModal:     $('resetModal'),
   cancelReset:    $('cancelResetBtn'),
   confirmReset:   $('confirmResetBtn'),
   toast:          $('toast'),
+  pages:          document.querySelectorAll('.page'),
+  bnavBtns:       document.querySelectorAll('.bnav-btn'),
 };
 
 /* ──────────────────────────────────────────────
@@ -186,7 +189,9 @@ function updatePlayerUI(player) {
   el.playerName.textContent   = player.name;
   el.playerTag.textContent    = player.tag;
   el.playerTrLive.textContent = player.trophies.toLocaleString('fr-FR');
-  el.playerAvatar.textContent = (player.name || '?')[0].toUpperCase();
+  const initial = (player.name || '?')[0].toUpperCase();
+  el.playerAvatar.textContent   = initial;
+  el.playerAvatarLg.textContent = initial;
   let latestTs = 0;
   daysData.forEach(d => { if (d?.syncedAt > latestTs) latestTs = d.syncedAt; });
   el.lastSync.textContent = latestTs ? `Dernière sync : ${fmtTime(latestTs)}` : 'Jamais synchronisé';
@@ -215,7 +220,7 @@ function renderStats() {
 
   if (gain !== null && completed > 0) {
     el.statGain.textContent = (gain>=0?'+':'')+gain.toLocaleString('fr-FR');
-    el.statGain.style.color = gain >= totalGoal ? 'var(--green)' : 'var(--text-primary)';
+    el.statGain.style.color = gain >= totalGoal ? 'var(--green)' : 'var(--text)';
   } else { el.statGain.textContent='+0'; el.statGain.style.color=''; }
 
   if (completed > 0 && gain !== null) {
@@ -273,7 +278,7 @@ function renderCalendar() {
     let calDate = '';
     if (config?.startDate) {
       const d = new Date(config.startDate); d.setDate(d.getDate()+i);
-      calDate = `<small style="font-size:9px;color:var(--text-muted);font-weight:600;display:block;margin-top:2px">${fmtDate(d.toISOString().split('T')[0])}</small>`;
+      calDate = `<small style="font-size:9px;color:var(--text3);font-weight:600;display:block;margin-top:2px">${fmtDate(d.toISOString().split('T')[0])}</small>`;
     }
 
     const row = document.createElement('div');
@@ -289,8 +294,11 @@ function renderCalendar() {
 
 function renderBilan() {
   if (!config || startTr===null || !daysData[TOTAL_DAYS-1]) {
-    el.bilanSection.classList.add('hidden'); return;
+    el.bilanSection.classList.add('hidden');
+    el.bilanEmptyCard.classList.remove('hidden');
+    return;
   }
+  el.bilanEmptyCard.classList.add('hidden');
   const gain = getTotalGain(), goal = config.dailyGoal, tot = goal*TOTAL_DAYS;
   const ok = gain >= tot, cls = ok ? 'success' : 'fail';
   el.bilanSection.classList.remove('hidden');
@@ -314,8 +322,13 @@ function renderAll() { renderStats(); renderCalendar(); renderBilan(); }
    NAVIGATION
 ────────────────────────────────────────────── */
 function showScreen(name) {
-  el.screenSetup.classList.toggle('hidden',   name !== 'setup');
-  el.screenTracker.classList.toggle('hidden', name !== 'tracker');
+  el.screenSetup.classList.toggle('hidden', name !== 'setup');
+  el.app.classList.toggle('hidden',        name !== 'tracker');
+}
+
+function showPage(name) {
+  el.pages.forEach(p => p.classList.toggle('active', p.id === `page-${name}`));
+  el.bnavBtns.forEach(b => b.classList.toggle('active', b.id === `bnav-${name}`));
 }
 
 /* ──────────────────────────────────────────────
@@ -367,7 +380,7 @@ async function onStart() {
   el.setupLoader.classList.add('hidden');
   setApiStatus('ok', '✅ Lancé !');
   showScreen('tracker');
-  el.headerSub.textContent = `${player.name} · Défi 30 Jours`;
+  showPage('accueil');
   updatePlayerUI(player);
   renderAll();
   showToast(`🚀 Défi lancé ! Départ : ${player.trophies.toLocaleString('fr-FR')} 🏆`, 'success');
@@ -407,7 +420,7 @@ async function init() {
   if (!config) { showScreen('setup'); return; }
 
   showScreen('tracker');
-  el.headerSub.textContent = `${config.playerName} · Défi 30 Jours`;
+  showPage('accueil');
   renderAll();
 
   const idx          = getTodayIndex();
@@ -432,5 +445,9 @@ el.resetBtn.addEventListener('click', () => el.resetModal.classList.remove('hidd
 el.cancelReset.addEventListener('click', () => el.resetModal.classList.add('hidden'));
 el.confirmReset.addEventListener('click', () => { el.resetModal.classList.add('hidden'); onReset(); });
 el.resetModal.addEventListener('click', e => { if (e.target === el.resetModal) el.resetModal.classList.add('hidden'); });
+
+$('bnav-accueil').addEventListener('click', () => showPage('accueil'));
+$('bnav-calendrier').addEventListener('click', () => showPage('calendrier'));
+$('bnav-bilan').addEventListener('click', () => showPage('bilan'));
 
 init();
