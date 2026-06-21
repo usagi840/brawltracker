@@ -122,7 +122,7 @@
     <p class="subtitle">Découvre qui jouer et comment monter tes trophées facilement</p>
 
     <div class="search-box">
-        <input type="text" id="playerTag" placeholder="Ex: #2G02UU0" value="#">
+        <input type="text" id="playerTag" placeholder="Ex: 2G02UU0" value="2V29R99RVR">
         <button onclick="analyserProfil()">Optimiser</button>
     </div>
 
@@ -132,13 +132,13 @@
         </div>
 
     <script>
-        // URL de ton Cloudflare Worker configurée
+        // URL de ton Cloudflare Worker
         const WORKER_URL = "https://tark.alex-usagi84.workers.dev/"; 
 
         async function analyserProfil() {
             let tag = document.getElementById('playerTag').value.trim();
             
-            // Nettoyage du tag (on enlève le # pour l'envoyer proprement)
+            // On nettoie les espaces et le # si l'utilisateur l'a tapé
             tag = tag.replace('#', '');
 
             if (!tag) {
@@ -153,8 +153,8 @@
             loader.style.display = 'block';
 
             try {
-                // Appel à ton worker. Note: Ajuste cette ligne si ton worker requiert un format spécifique (ex: `${WORKER_URL}?tag=${tag}`)
-                const response = await fetch(`${WORKER_URL}${tag}`);
+                // Correction ici : Ajout du %23 pour encoder le # requis par l'API Supercell
+                const response = await fetch(`${WORKER_URL}%23${tag}`);
                 
                 if (!response.ok) {
                     throw new Error("Impossible de récupérer les données du joueur.");
@@ -215,11 +215,10 @@
 
             } catch (error) {
                 loader.style.display = 'none';
-                alert("Erreur lors de la récupération des données. Vérifie ton tag ou l'état de ton Worker.");
+                suggestionsDiv.innerHTML = "<p style='color: #ff6666;'>Erreur de connexion avec le Worker. Vérifie que ton Worker gère bien le format attendu.</p>";
                 console.error(error);
             }
         }
     </script>
 </body>
-  </html>
-
+</html>
