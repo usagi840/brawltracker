@@ -463,12 +463,42 @@ function onReset() {
 }
 
 /* ──────────────────────────────────────────────
-   INIT
+   RÉPARATION RÉTROACTIVE
+   Avant ce correctif, un jour non synchronisé restait
+   vide (null) au lieu d'être comblé : à la prochaine
+   sync, le gain de plusieurs jours se retrouvait crédité
+   d'un coup sur le jour de la reprise. Cette fonction
+   comble après coup les trous laissés dans l'historique,
+   en reportant le dernier solde connu sur les jours
+   manqués (gain = 0 ce jour-là, comme le fait autoSync).
+   Idempotente : ne touche jamais un jour déjà rempli.
 ────────────────────────────────────────────── */
+function repairShiftedDays() {
+  if (!config || startTr === null) return;
+  const todayIdx = getTodayIndex();
+  if (todayIdx < 0) return;
+
+  let lastKnownValue = startTr;
+  let changed = false;
+
+  for (let i = 0; i < todayIdx; i++) {
+    if (daysData[i] && typeof daysData[i].trophies === 'number') {
+      lastKnownValue = daysData[i].trophies;
+    } else if (!daysData[i]) {
+      daysData[i] = { trophies: lastKnownValue, date: addDays(config.startDate, i), syncedAt: Date.now(), missed: true };
+      changed = true;
+      // lastKnownValue reste inchangé : ce jour n'apporte aucun gain réel.
+    }
+  }
+
+  if (changed) saveDays();
+}
 async function init() {
   loadStorage();
 
   if (!config) { showScreen('setup'); return; }
+
+  repairShiftedDays();
 
   showScreen('tracker');
   showPage('accueil');
