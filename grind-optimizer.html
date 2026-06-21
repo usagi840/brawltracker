@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Grind Optimizer — Brawl Stars</title>
+<style>
+  :root{
+    --ink:#1a1030;
+    --bg-deep:#2b1657;
+    --bg-deep2:#1c0e3d;
+    --panel:#3a1f73;
+    --panel-edge:#1a0d3a;
+    --paper:#fff8e7;
+    --yellow:#ffd23f;
+    --yellow-deep:#f0a500;
+    --pink:#ff4d8d;
+    --cyan:#3ddcff;
+    --green:#5ee68a;
+    --red:#ff5c5c;
+    --line:#120726;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{margin:0;padding:0;}
+
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, #4a2a8c 0%, transparent 45%),
+      radial-gradient(circle at 85% 0%, #5c2f8f 0%, transparent 40%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 26px),
+      linear-gradient(160deg, var(--bg-deep) 0%, var(--bg-deep2) 100%);
+    background-attachment: fixed;
+    color: var(--paper);
+    font-family: 'Segoe UI', Verdana, sans-serif;
+    min-height: 100vh;
+    padding: 18px 14px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  /* ---------- HEADER / HERO ---------- */
+  .hero{
+    width:100%;
+    max-width: 980px;
+    text-align:center;
+    margin-bottom: 22px;
+    position:relative;
+  }
+
+  .hero .crack{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    opacity:.5;
+  }
+
+  .brand{
+    font-size: clamp(34px, 7vw, 58px);
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--yellow);
+    text-shadow:
+      3px 0 var(--line), -3px 0 var(--line),
+      0 3px var(--line), 0 -3px var(--line),
+      6px 6px 0 rgba(0,0,0,.35);
+    text-transform: uppercase;
+    line-height: 1;
+    margin: 0;
+    transform: rotate(-1.2deg);
+  }
+  .brand .accent{ color: var(--pink); }
+
+  .tagline{
+    margin: 10px auto 0;
+    max-width: 520px;
+    color: #d9c9ff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+
+  /* ---------- SEARCH ---------- */
+  .search-card{
+    width:100%;
+    max-width: 460px;
+    background: var(--panel);
+    border: 4px solid var(--line);
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 8px 0 var(--panel-edge), 0 14px 24px rgba(0,0,0,.4);
+    margin-bottom: 18px;
+  }
+
+  .search-row{ display:flex; gap:10px; }
+
+  .input-wrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    background: var(--bg-deep2);
+    border: 3px solid var(--line);
+    border-radius: 10px;
+    padding-left: 12px;
+  }
+
+  .input-wrap .hash{ color: var(--yellow); font-weight:900; font-size:18px; }
+
+  input{
+    width:100%;
+    border:none;
+    background:transparent;
+    color: var(--paper);
+    padding: 13px 8px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  input::placeholder{ color:#8d7ec9; text-transform:none; letter-spacing:0; font-weight:500;}
+  input:focus{ outline:none; }
+
+  button.go{
+    padding: 0 22px;
+    border-radius: 10px;
+    border: 3px solid var(--line);
+    background: var(--yellow);
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    cursor:pointer;
+    box-shadow: 0 4px 0 var(--yellow-deep);
+    transition: transform .08s, box-shadow .08s;
+  }
+  button.go:active{ transform: translateY(3px); box-shadow:0 1px 0 var(--yellow-deep); }
+
+  .hint{
+    margin-top:10px;
+    font-size:12px;
+    color:#b8a6e8;
+    text-align:center;
+  }
+
+  /* ---------- STATE: loader / error ---------- */
+  #status{
+    width:100%;
+    max-width: 460px;
+    text-align:center;
+    margin-bottom: 18px;
+    font-weight:800;
+    display:none;
+  }
+  #status.loading{ color: var(--cyan); display:block; }
+  #status.error{ color: var(--red); display:block; }
+
+  .spinner{
+    display:inline-block;
+    width:16px;height:16px;
+    border:3px solid rgba(255,255,255,.25);
+    border-top-color: var(--cyan);
+    border-radius:50%;
+    animation: spin .7s linear infinite;
+    vertical-align:middle;
+    margin-right:8px;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  /* ---------- PROFILE SUMMARY ---------- */
+  #profileSummary{
+    width:100%;
+    max-width: 980px;
+    display:none;
+    margin-bottom: 22px;
+  }
+  .profile-bar{
+    background: var(--panel);
+    border:4px solid var(--line);
+    border-radius:16px;
+    padding: 16px 20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 16px;
+    align-items:center;
+    justify-content: space-between;
+    box-shadow: 0 6px 0 var(--panel-edge);
+  }
+  .profile-name{ font-size:20px; font-weight:900; color:var(--yellow); }
+  .profile-name small{ display:block; font-size:12px; color:#cabaf0; font-weight:600; margin-top:2px;}
+  .stat-pills{ display:flex; gap:10px; flex-wrap:wrap; }
+  .pill{
+    background: var(--bg-deep2);
+    border:2px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size:13px;
+    font-weight:800;
+  }
+  .pill.t{ color: var(--yellow); }
+  .pill.v{ color: var(--green); }
+  .pill.l{ color: var(--cyan); }
+
+  /* ---------- CONTROLS ROW (filters/sort) ---------- */
+  .controls{
+    width:100%;
+    max-width: 980px;
+    display:none;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom: 18px;
+    align-items:center;
+  }
+  .controls.show{ display:flex; }
+  .controls label{ font-size:12px; color:#cabaf0; font-weight:700; margin-right:4px;}
+  select{
+    background: var(--panel);
+    color: var(--paper);
+    border:2px solid var(--line);
+    border-radius:8px;
+    padding:7px 10px;
+    font-weight:700;
+    font-size:13px;
+  }
+  .seg{
+    display:flex;
+    border:2px solid var(--line);
+    border-radius:8px;
+    overflow:hidden;
+  }
+  .seg button{
+    background: var(--panel);
+    color:#cabaf0;
+    border:none;
+    padding:7px 12px;
+    font-size:12px;
+    font-weight:800;
+    cursor:pointer;
+    border-right: 2px solid var(--line);
+  }
+  .seg button:last-child{ border-right:none; }
+  .seg button.active{ background: var(--yellow); color: var(--ink); }
+
+  /* ---------- GRID / CARDS ---------- */
+  #suggestions{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 18px;
+    width:100%;
+    max-width: 980px;
+  }
+
+  .empty-msg{
+    grid-column: 1/-1;
+    text-align:center;
+    color:#cabaf0;
+    font-weight:700;
+    padding: 30px 10px;
+  }
+
+  .brawler-card{
+    background: var(--panel);
+    border: 3px solid var(--line);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 6px 0 var(--panel-edge);
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    transition: transform .12s;
+  }
+  .brawler-card:hover{ transform: translateY(-3px); }
+
+  .brawler-card::before{
+    content:"";
+    position:absolute;
+    top:-30px; right:-30px;
+    width:90px;height:90px;
+    background: var(--accent-tag, var(--yellow));
+    opacity:.18;
+    border-radius:50%;
+  }
+
+  .card-top{ display:flex; align-items:center; gap:12px; }
+
+  .pin{
+    width:52px;height:52px;
+    border-radius:50%;
+    border:3px solid var(--line);
+    background: var(--bg-deep2);
+    object-fit:cover;
+    flex-shrink:0;
+  }
+
+  .card-title{ flex:1; min-width:0; }
+  .card-title h3{
+    margin:0;
+    font-size:17px;
+    font-weight:900;
+    color: var(--yellow);
+    text-transform:uppercase;
+    letter-spacing:.3px;
+  }
+  .rank-badge{
+    display:inline-block;
+    margin-top:3px;
+    font-size:11px;
+    font-weight:800;
+    padding:2px 8px;
+    border-radius:6px;
+    background: var(--bg-deep2);
+    border:1px solid var(--line);
+  }
+
+  .priority-flag{
+    font-size:10px;
+    font-weight:900;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:6px;
+    letter-spacing:.5px;
+    white-space:nowrap;
+  }
+  .priority-flag.hot{ background: var(--red); color:#fff; }
+  .priority-flag.good{ background: var(--green); color:var(--ink); }
+  .priority-flag.meh{ background: #6c5a9e; color:#fff; }
+
+  .bar-track{
+    width:100%;
+    height:10px;
+    border-radius:6px;
+    background: var(--bg-deep2);
+    border:1px solid var(--line);
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--cyan), var(--green));
+    border-radius:6px 0 0 6px;
+  }
+
+  .stat-line{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:#d9c9ff;
+    font-weight:600;
+  }
+  .stat-line strong{ color: var(--paper); }
+
+  .advice-box{
+    background: var(--bg-deep2);
+    border:2px dashed #5c4a96;
+    border-radius:10px;
+    padding:9px 10px;
+    font-size:12.5px;
+    color:#e7dcff;
+    line-height:1.45;
+  }
+  .advice-box b{ color: var(--cyan); }
+
+  .equip-row{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+    font-size:11px;
+  }
+  .chip{
+    background: var(--bg-deep2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:3px 7px;
+    font-weight:700;
+  }
+  .chip.on{ color: var(--green); }
+  .chip.off{ color:#8d7ec9; }
+
+  /* ---------- FOOTER NOTE ---------- */
+  .footnote{
+    max-width:980px;
+    text-align:center;
+    color:#8d7ec9;
+    font-size:11.5px;
+    margin-top: 28px;
+    line-height:1.6;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  @media (max-width: 480px){
+    .brand{ letter-spacing:0; }
+    .profile-bar{ flex-direction:column; align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="hero">
+    <h1 class="brand">GRIND<span class="accent">OPTIMIZER</span></h1>
+    <p class="tagline">Entre ton tag, on épluche tous tes brawlers et on te dit lesquels pousser, jusqu'où, et où farmer.</p>
+  </div>
+
+  <div class="search-card">
+    <div class="search-row">
+      <div class="input-wrap">
+        <span class="hash">#</span>
+        <input type="text" id="playerTag" placeholder="TAG du joueur" autocomplete="off" maxlength="12" />
+      </div>
+      <button class="go" onclick="analyserProfil()">Optimiser</button>
+    </div>
+    <p class="hint">Ton tag est visible dans ton profil en jeu, juste sous ton pseudo.</p>
+  </div>
+
+  <div id="status"></div>
+
+  <div id="profileSummary"></div>
+
+  <div class="controls" id="controls">
+    <label for="sortSel">Trier par</label>
+    <select id="sortSel" onchange="render()">
+      <option value="priority">Priorité de grind</option>
+      <option value="trophies_desc">Trophées (haut → bas)</option>
+      <option value="trophies_asc">Trophées (bas → haut)</option>
+      <option value="power_desc">Puissance</option>
+      <option value="name">Nom (A-Z)</option>
+    </select>
+    <div class="seg" id="filterSeg">
+      <button data-f="all" class="active">Tous</button>
+      <button data-f="hot">À pousser</button>
+      <button data-f="ready">Prêts (P11)</button>
+      <button data-f="unbuilt">Pas équipés</button>
+    </div>
+  </div>
+
+  <div id="suggestions"></div>
+
+  <p class="footnote">Grind Optimizer · Outil non-officiel, non affilié à Supercell.<br>Les objectifs sont des repères indicatifs basés sur tes trophées, ta puissance et ton équipement — pas une garantie de classement.</p>
+
+<script>
+  const BS_WORKER = 'https://tark.alex-usagi84.workers.dev/';
+
+  // ----- Archétypes / conseils de map par brawler (FR) -----
+  const ARCHETYPES = {
+    SOLO_TANK:    { names:["SHELLY","BULL","EL PRIMO","DARRYL","FRANK","ROSA","BUZZ","ASH","MEG","BUSTER","DRACO"], conseil:"Survivant Solo ou maps fermées de Brawl Ball — fonce au contact." },
+    ASSASSIN:     { names:["EDGAR","FANG","MORTIS","KENJI","MELODIE","CHESTER","BUZZ"], conseil:"Braquage ou Hold the Trophy — exploite les murs pour rusher les supports." },
+    SNIPER:       { names:["PIPER","BELLE","BROCK","ANGELO","BONNIE","CLANCY","MANDY"], conseil:"Prime ou Hors-jeu sur maps ouvertes — reste en distance, vise les lignes droites." },
+    LOBBER:       { names:["BARLEY","DYNAMIKE","TICK","GROM","SPROUT","LARRY & LAWRIE"], conseil:"Braquage ou Zone Réservée — punis derrière les murs et les buissons." },
+    SUPPORT:      { names:["POCO","BYRON","GENE","PAM","GUS","BERRY","KIT","DOUG"], conseil:"Brawl Ball ou Razzia de Gemmes — reste groupé, soutiens sans t'exposer." },
+    CONTROL:      { names:["JESSIE","TICK","GALE","SQUEAK","WILLOW","MR. P","JANET"], conseil:"Razzia de Gemmes ou Zone Réservée — contrôle l'espace avec les zones de déni." },
+    MARKSMAN:     { names:["COLT","RICO","BEA","NANI","BONNIE"], conseil:"Prime ou maps longues lignes de vue — punis les déplacements adverses." },
+    SWARM:        { names:["PENNY","CARL","SURGE","8-BIT","SPIKE"], conseil:"Brawl Ball ou Braquage — zone l'espace, fais reculer l'adversaire en zone." },
+  };
+
+  function getConseil(name){
+    const upper = name.toUpperCase();
+    for (const key in ARCHETYPES){
+      if (ARCHETYPES[key].names.includes(upper)) return ARCHETYPES[key].conseil;
+    }
+    return "Brawl Ball ou Razzia de Gemmes — modes polyvalents pour progresser sans risque.";
+  }
+
+  // Couleurs d'accent variées par tranche de rareté simulée (sur la base du power, faute de mieux)
+  function accentFor(power){
+    if (power >= 11) return '#ff4d8d';
+    if (power >= 9)  return '#3ddcff';
+    if (power >= 6)  return '#5ee68a';
+    return '#ffd23f';
+  }
+
+  function cleanTag(raw){
+    return raw.replace(/^#/, '').toUpperCase().replace(/O/g, '0').replace(/[^A-Z0-9]/g, '');
+  }
+
+  function setStatus(kind, html){
+    const el = document.getElementById('status');
+    el.className = kind || '';
+    el.innerHTML = html || '';
+    el.style.display = html ? 'block' : 'none';
+  }
+
+  let CURRENT_DATA = null;     // raw player payload
+  let CURRENT_ANALYSIS = [];   // computed analysis per brawler
+  let CURRENT_FILTER = 'all';
+
+  async function analyserProfil(){
+    const rawTag = document.getElementById('playerTag').value.trim();
+    const tag = cleanTag(rawTag);
+
+    if (tag.length < 3){
+      setStatus('error', 'Tag trop court — vérifie ton tag (sans le #).');
+      return;
+    }
+
+    document.getElementById('profileSummary').style.display = 'none';
+    document.getElementById('controls').classList.remove('show');
+    document.getElementById('suggestions').innerHTML = '';
+    setStatus('loading', '<span class="spinner"></span> Connexion à l\'API Brawl Stars…');
+
+    try {
+      const url = `${BS_WORKER}?tag=${encodeURIComponent(tag)}`;
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+
+      if (!response.ok){
+        throw new Error('api_error');
+      }
+
+      const data = await response.json();
+
+      if (!data || !data.brawlers || data.brawlers.length === 0){
+        setStatus('error', 'Aucun brawler trouvé sur ce compte. Vérifie le tag.');
+        return;
+      }
+
+      CURRENT_DATA = data;
+      CURRENT_ANALYSIS = data.brawlers.map(analyserBrawler);
+      setStatus('', '');
+      renderProfileSummary(data);
+      document.getElementById('controls').classList.add('show');
+      render();
+
+    } catch (err){
+      console.error(err);
+      setStatus('error', "Erreur de récupération. Vérifie ton tag ou réessaie dans un instant.");
+    }
+  }
+
+  function renderProfileSummary(data){
+    const box = document.getElementById('profileSummary');
+    const wins3v3 = data['3vs3Victories'] ?? data.victories3v3 ?? '—';
+    const solo = data.soloVictories ?? '—';
+    const duo = data.duoVictories ?? '—';
+    const lvl = data.expLevel ?? '—';
+
+    box.innerHTML = `
+      <div class="profile-bar">
+        <div class="profile-name">
+          ${escapeHtml(data.name || 'Joueur')}
+          <small>#${cleanTag(document.getElementById('playerTag').value)} · ${data.brawlers.length} brawlers débloqués</small>
+        </div>
+        <div class="stat-pills">
+          <span class="pill t">🏆 ${data.trophies ?? '—'}</span>
+          <span class="pill l">⭐ Niveau ${lvl}</span>
+          <span class="pill v">🎯 3c3 : ${wins3v3}</span>
+          <span class="pill v">🥇 Solo : ${solo}</span>
+          <span class="pill v">🥈 Duo : ${duo}</span>
+        </div>
+      </div>
+    `;
+    box.style.display = 'block';
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ----- Coeur de l'algo -----
+  function analyserBrawler(b){
+    const power = b.power ?? 1;
+    const trophies = b.trophies ?? 0;
+    const highest = b.highestTrophies ?? trophies;
+    const rank = b.rank ?? 1;
+    const gearsCount = (b.gears || []).length;
+    const spCount = (b.starPowers || []).length;
+    const gadCount = (b.gadgets || []).length;
+    const maxedOut = power >= 11;
+    const fullyEquipped = spCount >= 1 && gadCount >= 1 && gearsCount >= 2;
+
+    // Paliers de trophées par rang (repères communautaires, indicatifs)
+    const paliers = [
+      {r:1,t:0},{r:2,t:20},{r:3,t:50},{r:4,t:100},{r:5,t:150},{r:6,t:250},
+      {r:7,t:350},{r:8,t:450},{r:9,t:550},{r:10,t:650},{r:11,t:750},
+      {r:12,t:850},{r:13,t:950},{r:14,t:1050},{r:15,t:1150}
+    ];
+
+    // Trouve le palier juste au-dessus des trophées actuels
+    let prochainPalier = paliers.find(p => p.t > trophies);
+    let objectif = prochainPalier ? prochainPalier.t : trophies + 100;
+
+    // Score de priorité : on privilégie les brawlers maxés/équipés et sous leur record,
+    // ou ceux avec un fort potentiel de gain rapide (proches d'un palier).
+    let score = 0;
+    let raison = [];
+
+    if (maxedOut) { score += 40; raison.push("brawler maxé (P11)"); }
+    else if (power >= 9) { score += 20; raison.push("bien avancé"); }
+
+    if (trophies < highest) {
+      const ecart = highest - trophies;
+      score += Math.min(ecart, 60) * 0.5;
+      raison.push(`${ecart} trophées sous son record`);
+    }
+
+    const distancePalier = objectif - trophies;
+    if (distancePalier > 0 && distancePalier <= 40) {
+      score += 25;
+      raison.push(`proche du palier ${prochainPalier.r}`);
+    }
+
+    if (!fullyEquipped && power >= 7) {
+      score -= 10;
+      raison.push("équipement incomplet");
+    }
+
+    if (trophies >= 1000) {
+      score += 5;
+      raison.push("déjà en haute ligue");
+    }
+
+    let difficulte, flagClass, flagText;
+    if (maxedOut && trophies < 750){
+      difficulte = "Facile"; flagClass="good"; flagText="Sous-côté";
+    } else if (power >= 9 && trophies < 600){
+      difficulte = "Facile"; flagClass="good"; flagText="À pousser";
+    } else if (trophies >= 1000){
+      difficulte = "Difficile"; flagClass="hot"; flagText="High Elo";
+    } else if (!fullyEquipped) {
+      difficulte = "Moyenne"; flagClass="meh"; flagText="Pas équipé";
+    } else {
+      difficulte = "Moyenne"; flagClass="meh"; flagText="Standard";
+    }
+
+    const progressPct = Math.max(2, Math.min(100, Math.round((trophies / objectif) * 100)));
+
+    return {
+      name: b.name,
+      power, trophies, highest, rank,
+      gearsCount, spCount, gadCount,
+      maxedOut, fullyEquipped,
+      objectif,
+      prochainRang: prochainPalier ? prochainPalier.r : rank + 1,
+      score,
+      raison: raison.join(" · "),
+      difficulte, flagClass, flagText,
+      progressPct,
+      conseil: getConseil(b.name),
+      accent: accentFor(power),
+    };
+  }
+
+  function applyFilter(list, f){
+    if (f === 'hot') return list.filter(x => x.flagClass === 'good' || x.flagClass === 'hot');
+    if (f === 'ready') return list.filter(x => x.maxedOut);
+    if (f === 'unbuilt') return list.filter(x => !x.fullyEquipped);
+    return list;
+  }
+
+  function sortList(list, mode){
+    const copy = [...list];
+    switch(mode){
+      case 'trophies_desc': return copy.sort((a,b)=> b.trophies - a.trophies);
+      case 'trophies_asc': return copy.sort((a,b)=> a.trophies - b.trophies);
+      case 'power_desc': return copy.sort((a,b)=> b.power - a.power);
+      case 'name': return copy.sort((a,b)=> a.name.localeCompare(b.name));
+      default: return copy.sort((a,b)=> b.score - a.score);
+    }
+  }
+
+  function render(){
+    const grid = document.getElementById('suggestions');
+    const sortMode = document.getElementById('sortSel').value;
+
+    let list = applyFilter(CURRENT_ANALYSIS, CURRENT_FILTER);
+    list = sortList(list, sortMode);
+
+    if (list.length === 0){
+      grid.innerHTML = `<p class="empty-msg">Rien à afficher pour ce filtre. Essaie "Tous".</p>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(cardHtml).join('');
+  }
+
+  function cardHtml(x){
+    const pinUrl = `assets/${slug(x.name)}_pin.png`;
+    return `
+      <div class="brawler-card" style="--accent-tag:${x.accent}">
+        <div class="card-top">
+          <img class="pin" src="${pinUrl}" alt="${escapeHtml(x.name)}" onerror="this.style.visibility='hidden'">
+          <div class="card-title">
+            <h3>${escapeHtml(x.name)}</h3>
+            <span class="rank-badge">Rang ${x.rank} · Pouvoir ${x.power}</span>
+          </div>
+          <span class="priority-flag ${x.flagClass}">${x.flagText}</span>
+        </div>
+
+        <div>
+          <div class="stat-line"><span>🏆 ${x.trophies} trophées</span><strong>objectif ${x.objectif}</strong></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${x.progressPct}%"></div></div>
+        </div>
+
+        <div class="stat-line"><span>Difficulté</span><strong>${x.difficulte}</strong></div>
+
+        <div class="equip-row">
+          <span class="chip ${x.spCount>0?'on':'off'}">⭐ Star Power ${x.spCount}/2</span>
+          <span class="chip ${x.gadCount>0?'on':'off'}">🔧 Gadget ${x.gadCount}/2</span>
+          <span class="chip ${x.gearsCount>0?'on':'off'}">⚙️ Gears ${x.gearsCount}</span>
+        </div>
+
+        <div class="advice-box">
+          <b>Pourquoi :</b> ${x.raison || "profil équilibré"}.<br>
+          <b>Où jouer :</b> ${x.conseil}
+        </div>
+      </div>
+    `;
+  }
+
+  function slug(name){
+    return name.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  // Filter segment buttons
+  document.getElementById('filterSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    document.querySelectorAll('#filterSeg button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    CURRENT_FILTER = btn.dataset.f;
+    render();
+  });
+
+  document.getElementById('playerTag').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') analyserProfil();
+  });
+</script>
+</body>
+</html>
