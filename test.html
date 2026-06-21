@@ -122,7 +122,7 @@
     <p class="subtitle">Découvre qui jouer et comment monter tes trophées facilement</p>
 
     <div class="search-box">
-        <input type="text" id="playerTag" placeholder="Ex: 2G02UU0" value="2V29R99RVR">
+        <input type="text" id="playerTag" placeholder="Ex: BE736JE" value="2V29R99RVR">
         <button onclick="analyserProfil()">Optimiser</button>
     </div>
 
@@ -132,13 +132,13 @@
         </div>
 
     <script>
-        // URL de ton Cloudflare Worker
-        const WORKER_URL = "https://tark.alex-usagi84.workers.dev/"; 
+        // Base de l'URL de ton Cloudflare Worker
+        const WORKER_BASE = "https://tark.alex-usagi84.workers.dev/"; 
 
         async function analyserProfil() {
             let tag = document.getElementById('playerTag').value.trim();
             
-            // On nettoie les espaces et le # si l'utilisateur l'a tapé
+            // On enlève le # au cas où
             tag = tag.replace('#', '');
 
             if (!tag) {
@@ -153,8 +153,8 @@
             loader.style.display = 'block';
 
             try {
-                // Correction ici : Ajout du %23 pour encoder le # requis par l'API Supercell
-                const response = await fetch(`${WORKER_URL}%23${tag}`);
+                // Modification : On passe le paramètre comme ton worker l'attend (?tag=%23...)
+                const response = await fetch(`${WORKER_BASE}?tag=%23${tag}`);
                 
                 if (!response.ok) {
                     throw new Error("Impossible de récupérer les données du joueur.");
@@ -215,7 +215,7 @@
 
             } catch (error) {
                 loader.style.display = 'none';
-                suggestionsDiv.innerHTML = "<p style='color: #ff6666;'>Erreur de connexion avec le Worker. Vérifie que ton Worker gère bien le format attendu.</p>";
+                suggestionsDiv.innerHTML = "<p style='color: #ff6666;'>Erreur de connexion avec le Worker. Vérifie tes paramètres.</p>";
                 console.error(error);
             }
         }
