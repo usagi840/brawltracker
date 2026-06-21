@@ -12,6 +12,7 @@
    API (via le Worker de Tark)
 ────────────────────────────────────────────── */
 const BS_WORKER = 'https://tark.alex-usagi84.workers.dev/';
+const BS_ICON_CDN = 'https://cdn.brawlify.com/profile-icons/regular/';
 
 /* ──────────────────────────────────────────────
    CONSTANTES
@@ -76,6 +77,7 @@ const el = {
 const pad      = n => String(n).padStart(2, '0');
 const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
 const daysDiff = (a, b) => Math.round((new Date(b).setHours(0,0,0,0) - new Date(a).setHours(0,0,0,0)) / 86400000);
+const addDays  = (dateStr, n) => { const d = new Date(dateStr); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
 const fmtDate  = s => { if (!s) return '—'; const [,m,d] = s.split('-'); return `${d}/${m}`; };
 const fmtTime  = ts => { if (!ts) return '—'; const d = new Date(ts); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 
@@ -122,7 +124,12 @@ async function fetchPlayer(rawTag) {
   }
 
   if (res.ok && !data.error && typeof data.trophies === 'number') {
-    return { trophies: data.trophies, name: data.name || 'Joueur', tag: data.tag || ('#' + tag) };
+    return {
+      trophies: data.trophies,
+      name: data.name || 'Joueur',
+      tag: data.tag || ('#' + tag),
+      iconId: data.icon?.id ?? null,
+    };
   }
   if (res.status === 404 || data.error) {
     throw new Error(`Tag "#${tag}" introuvable. Vérifie ton tag dans Brawl Stars → Profil → #TAG`);
@@ -157,11 +164,32 @@ async function autoSync() {
   }
 
   if (player.name !== config.playerName) { config.playerName = player.name; saveConfig(); }
+  if (player.iconId && player.iconId !== config.playerIconId) { config.playerIconId = player.iconId; saveConfig(); }
 
   const idx   = getTodayIndex();
   const today = todayStr();
 
   if (idx >= 0) {
+    // Trouve le dernier jour pour lequel on a un solde de trophées connu.
+    let lastKnownIdx   = -1;
+    let lastKnownValue = startTr;
+    for (let i = 0; i < idx; i++) {
+      if (daysData[i] && typeof daysData[i].trophies === 'number') {
+        lastKnownIdx   = i;
+        lastKnownValue = daysData[i].trophies;
+      }
+    }
+
+    // Comble les jours sautés entre le dernier point connu et aujourd'hui :
+    // on ne peut pas reconstituer le détail jour par jour, donc on les marque
+    // comme "manqués" en reportant le dernier solde connu (gain = 0 ce jour-là),
+    // pour éviter de comptabiliser plusieurs jours de gains sur le jour courant.
+    for (let i = lastKnownIdx + 1; i < idx; i++) {
+      if (!daysData[i]) {
+        daysData[i] = { trophies: lastKnownValue, date: addDays(config.startDate, i), syncedAt: Date.now(), missed: true };
+      }
+    }
+
     const slot = daysData[idx];
     if (!slot || slot.date !== today) {
       daysData[idx] = { trophies: player.trophies, date: today, syncedAt: Date.now() };
@@ -189,12 +217,29 @@ function updatePlayerUI(player) {
   el.playerName.textContent   = player.name;
   el.playerTag.textContent    = player.tag;
   el.playerTrLive.textContent = player.trophies.toLocaleString('fr-FR');
+
   const initial = (player.name || '?')[0].toUpperCase();
-  el.playerAvatar.textContent   = initial;
-  el.playerAvatarLg.textContent = initial;
+  setAvatar(el.playerAvatar, player.iconId, initial);
+  setAvatar(el.playerAvatarLg, player.iconId, initial);
+
   let latestTs = 0;
   daysData.forEach(d => { if (d?.syncedAt > latestTs) latestTs = d.syncedAt; });
   el.lastSync.textContent = latestTs ? `Dernière sync : ${fmtTime(latestTs)}` : 'Jamais synchronisé';
+}
+
+/* Affiche l'icône de profil Brawl Stars réelle (via la CDN Brawlify),
+   avec repli sur l'initiale du pseudo si l'icône est indisponible. */
+function setAvatar(node, iconId, fallbackInitial) {
+  if (!node) return;
+  if (iconId) {
+    node.textContent = '';
+    node.style.backgroundImage = `url(${BS_ICON_CDN}${iconId}.png)`;
+    node.classList.add('has-icon');
+  } else {
+    node.style.backgroundImage = '';
+    node.classList.remove('has-icon');
+    node.textContent = fallbackInitial;
+  }
 }
 
 /* ──────────────────────────────────────────────
@@ -253,15 +298,19 @@ function renderCalendar() {
     if (filled && diff !== null) cls += diff >= goal ? ' success' : ' fail';
     if (isToday)  cls += ' today';
     if (skipped)  cls += ' skipped';
+    if (slot?.missed) cls += ' skipped';
 
     let icon = '⬜';
-    if (filled && diff !== null) icon = diff >= goal ? '✅' : '❌';
+    if (slot?.missed)              icon = '⏭️';
+    else if (filled && diff !== null) icon = diff >= goal ? '✅' : '❌';
     else if (isToday)  icon = '📡';
     else if (skipped)  icon = '⏭️';
     else if (future)   icon = '🔒';
 
     let mainHTML;
-    if (filled) {
+    if (slot?.missed) {
+      mainHTML = `<div class="day-placeholder">Jour manqué (non synchronisé)</div>`;
+    } else if (filled) {
       mainHTML = `<div class="day-trophies">${slot.trophies.toLocaleString('fr-FR')} 🏆</div>
                   <div class="day-date">${fmtDate(slot.date)}</div>`;
     } else if (isToday)  mainHTML = `<div class="day-placeholder">En attente de sync…</div>`;
@@ -270,7 +319,9 @@ function renderCalendar() {
     else                 mainHTML = `<div class="day-placeholder">—</div>`;
 
     let diffText = '', diffCls = 'day-diff neutral';
-    if (filled && diff !== null) {
+    if (slot?.missed) {
+      diffText = '—';
+    } else if (filled && diff !== null) {
       diffText = (diff>=0?'+':'')+diff.toLocaleString('fr-FR');
       diffCls  = `day-diff ${diff >= goal ? 'positive' : 'negative'}`;
     }
@@ -370,7 +421,7 @@ async function onStart() {
     return;
   }
 
-  config   = { playerTag: player.tag, playerName: player.name, dailyGoal: goal, startDate: todayStr() };
+  config   = { playerTag: player.tag, playerName: player.name, playerIconId: player.iconId ?? null, dailyGoal: goal, startDate: todayStr() };
   startTr  = player.trophies;
   daysData = new Array(TOTAL_DAYS).fill(null);
   daysData[0] = { trophies: player.trophies, date: todayStr(), syncedAt: Date.now() };
@@ -431,7 +482,7 @@ async function init() {
     showToast('📡 Nouveau jour — synchronisation…', 'info');
     await autoSync();
   } else {
-    updatePlayerUI({ trophies: slot.trophies, name: config.playerName, tag: config.playerTag });
+    updatePlayerUI({ trophies: slot.trophies, name: config.playerName, tag: config.playerTag, iconId: config.playerIconId });
     setApiStatus('ok', '✅ Données en cache');
   }
 }
