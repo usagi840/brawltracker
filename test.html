@@ -1,148 +1,184 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brawl Stars - Assistant de Grind</title>
-    <style>
-        /* CSS Léger et Style Gaming */
-        body {
-            background-color: #121212;
-            color: #ffffff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Brawl Stars - Grind Optimizer</title>
+  <style>
+    /* Style sombre et léger inspiré de ton Tracker */
+    :root {
+      --bg: #121212;
+      --card-bg: #1e1e1e;
+      --accent: #ffcc00;
+      --text: #ffffff;
+      --text-muted: #aaaaaa;
+      --green: #00ffcc;
+      --red: #ff6666;
+    }
 
-        h1 {
-            color: #ffcc00;
-            text-shadow: 2px 2px #000000;
-            margin-bottom: 5px;
-        }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
 
-        .subtitle {
-            color: #aaaaaa;
-            margin-bottom: 25px;
-        }
+    .brand {
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 800;
+      text-shadow: 2px 2px #000000;
+      margin-bottom: 5px;
+    }
 
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 400px;
-        }
+    .brand span {
+      color: var(--text);
+    }
 
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #333;
-            background-color: #1e1e1e;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-        }
+    .subtitle {
+      color: var(--text-muted);
+      margin-bottom: 25px;
+      font-size: 14px;
+      text-align: center;
+    }
 
-        input:focus {
-            border-color: #ffcc00;
-            outline: none;
-        }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      width: 100%;
+      max-width: 400px;
+    }
 
-        button {
-            padding: 12px 20px;
-            border-radius: 8px;
-            border: none;
-            background-color: #ffcc00;
-            color: #000000;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s, background-color 0.2s;
-        }
+    .input-prefix-wrap {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      background-color: var(--card-bg);
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding-left: 12px;
+    }
 
-        button:hover {
-            background-color: #ffe066;
-            transform: scale(1.02);
-        }
+    .input-prefix {
+      color: var(--accent);
+      font-weight: bold;
+      font-size: 16px;
+    }
 
-        #loader {
-            display: none;
-            color: #ffcc00;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
+    input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: white;
+      padding: 12px 8px;
+      font-size: 16px;
+      font-weight: bold;
+    }
 
-        #suggestions {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1000px;
-        }
+    input:focus {
+      outline: none;
+    }
 
-        .brawler-card {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 6px solid #ffcc00;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
+    button {
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      background-color: var(--accent);
+      color: #000000;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
 
-        .brawler-card h3 {
-            margin-top: 0;
-            color: #ffcc00;
-            font-size: 20px;
-            letter-spacing: 1px;
-        }
+    button:hover {
+      transform: scale(1.02);
+    }
 
-        .brawler-card p {
-            margin: 8px 0;
-            font-size: 14px;
-            color: #dddddd;
-        }
+    #loader {
+      display: none;
+      color: var(--accent);
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
 
-        .brawler-card strong {
-            color: #00ffcc;
-        }
+    #suggestions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      width: 100%;
+      max-width: 1000px;
+    }
 
-        .brawler-card em {
-            color: #ff6666;
-            font-style: normal;
-            font-weight: bold;
-        }
-    </style>
+    .brawler-card {
+      background-color: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 6px solid var(--accent);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .brawler-card h3 {
+      margin-top: 0;
+      color: var(--accent);
+      font-size: 20px;
+      letter-spacing: 1px;
+    }
+
+    .brawler-card p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: #dddddd;
+    }
+
+    .brawler-card strong {
+      color: var(--green);
+    }
+
+    .brawler-card em {
+      color: var(--red);
+      font-style: normal;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
 
-    <h1>Brawl Grind Optimizer</h1>
-    <p class="subtitle">Découvre qui jouer et comment monter tes trophées facilement</p>
+    <div class="brand">Brawl<span>Optimizer</span></div>
+    <p class="subtitle">Analyse tes brawlers pour savoir qui jouer et jusqu'où les monter</p>
 
     <div class="search-box">
-        <input type="text" id="playerTag" placeholder="Ex: BE736JE" value="2V29R99RVR">
+        <div class="input-prefix-wrap">
+            <span class="input-prefix">#</span>
+            <input type="text" id="playerTag" placeholder="XXXXXX" autocomplete="off">
+        </div>
         <button onclick="analyserProfil()">Optimiser</button>
     </div>
 
-    <div id="loader">Analyse du compte en cours...</div>
+    <div id="loader">🔄 Connexion à l'API Brawl Stars...</div>
 
     <div id="suggestions">
         </div>
 
     <script>
-        // Base de l'URL de ton Cloudflare Worker
-        const WORKER_BASE = "https://tark.alex-usagi84.workers.dev/"; 
+        const BS_WORKER = 'https://tark.alex-usagi84.workers.dev/';
+
+        // Nettoyage identique à ton script d'origine
+        function cleanTag(raw) {
+            return raw.replace(/^#/, '').toUpperCase().replace(/O/g, '0').replace(/[^A-Z0-9]/g, '');
+        }
 
         async function analyserProfil() {
-            let tag = document.getElementById('playerTag').value.trim();
-            
-            // On enlève le # au cas où
-            tag = tag.replace('#', '');
+            const rawTag = document.getElementById('playerTag').value.trim();
+            const tag = cleanTag(rawTag);
 
-            if (!tag) {
-                alert("Mets un tag de joueur valide !");
+            if (tag.length < 3) {
+                alert("Tag trop court !");
                 return;
             }
 
@@ -153,11 +189,12 @@
             loader.style.display = 'block';
 
             try {
-                // Modification : On passe le paramètre comme ton worker l'attend (?tag=%23...)
-                const response = await fetch(`${WORKER_BASE}?tag=%23${tag}`);
+                // On utilise la structure exacte de ton fetch fonctionnel : ?tag=TAG
+                const url = `${BS_WORKER}?tag=${encodeURIComponent(tag)}`;
+                const response = await fetch(url, { headers: { Accept: 'application/json' } });
                 
                 if (!response.ok) {
-                    throw new Error("Impossible de récupérer les données du joueur.");
+                    throw new Error('Impossible de joindre l\'API.');
                 }
 
                 const data = await response.json();
@@ -166,16 +203,16 @@
                 loader.style.display = 'none';
 
                 if (!brawlers || brawlers.length === 0) {
-                    suggestionsDiv.innerHTML = "<p>Aucun brawler trouvé ou profil introuvable.</p>";
+                    suggestionsDiv.innerHTML = "<p>Aucun brawler trouvé sur ce compte.</p>";
                     return;
                 }
 
                 brawlers.forEach(brawler => {
                     let objectifTrophees = brawler.trophies;
-                    let difficulte = "Normal";
+                    let difficulte = "Normale";
                     let conseilMap = "Tous modes";
 
-                    // Algorithme de recommandation de Grind
+                    // Algorithme d'optimisation selon le niveau de pouvoir
                     if (brawler.power >= 10 && brawler.trophies < 750) {
                         objectifTrophees = 750;
                         difficulte = "Facile (Brawler Maxé)";
@@ -190,14 +227,14 @@
                         difficulte = "Moyenne";
                     }
 
-                    // Conseils basiques selon les archétypes de brawlers
+                    // Recommandations selon les archétypes
                     const brawlerName = brawler.name.toUpperCase();
                     if (["SHELLY", "BULL", "EDGAR", "EL PRIMO", "DARRYL", "FANG"].includes(brawlerName)) {
                         conseilMap = "Survivant Solo ou Brawl Ball (Maps fermées)";
                     } else if (["COLT", "PIPER", "ANGELO", "BELLE", "BROCK"].includes(brawlerName)) {
                         conseilMap = "Prime, Hors-jeu ou Zone Réservée (Maps ouvertes)";
                     } else if (["BARLEY", "DYNAMIKE", "TICK", "GROM"].includes(brawlerName)) {
-                        conseilMap = "Braquage ou Zone Réservée (Derrière les murs)";
+                        conseilMap = "Braquage ou Zone Réservée (Murs)";
                     } else {
                         conseilMap = "Brawl Ball ou Razzia de Gemmes";
                     }
@@ -205,17 +242,17 @@
                     suggestionsDiv.innerHTML += `
                         <div class="brawler-card">
                             <h3>${brawler.name}</h3>
-                            <p>🏆 Trophées actuels : <strong>${brawler.trophies}</strong></p>
-                            <p>🎯 Objectif atteignable : <strong>${objectifTrophees} 🏆</strong></p>
-                            <p>⚡ Difficulté estimée : <strong>${difficulte}</strong></p>
-                            <p>📍 Mode conseillé : <em>${conseilMap}</em></p>
+                            <p>🏆 Trophées actuels : <strong>${brawler.trophies}</strong> (Pouvoir ${brawler.power})</p>
+                            <p>🎯 Objectif conseillé : <strong>${objectifTrophees} 🏆</strong></p>
+                            <p>⚡ Difficulté : <strong>${difficulte}</strong></p>
+                            <p>📍 Où le jouer : <em>${conseilMap}</em></p>
                         </div>
                     `;
                 });
 
             } catch (error) {
                 loader.style.display = 'none';
-                suggestionsDiv.innerHTML = "<p style='color: #ff6666;'>Erreur de connexion avec le Worker. Vérifie tes paramètres.</p>";
+                suggestionsDiv.innerHTML = "<p style='color: var(--red);'>Erreur de récupération. Vérifie ton tag ou l'état du Worker.</p>";
                 console.error(error);
             }
         }
