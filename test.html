@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars - Assistant de Grind</title>
+    <style>
+        /* CSS Léger et Style Gaming */
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #ffcc00;
+            text-shadow: 2px 2px #000000;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #aaaaaa;
+            margin-bottom: 25px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            background-color: #1e1e1e;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        input:focus {
+            border-color: #ffcc00;
+            outline: none;
+        }
+
+        button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            border: none;
+            background-color: #ffcc00;
+            color: #000000;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #ffe066;
+            transform: scale(1.02);
+        }
+
+        #loader {
+            display: none;
+            color: #ffcc00;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .brawler-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 6px solid #ffcc00;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .brawler-card h3 {
+            margin-top: 0;
+            color: #ffcc00;
+            font-size: 20px;
+            letter-spacing: 1px;
+        }
+
+        .brawler-card p {
+            margin: 8px 0;
+            font-size: 14px;
+            color: #dddddd;
+        }
+
+        .brawler-card strong {
+            color: #00ffcc;
+        }
+
+        .brawler-card em {
+            color: #ff6666;
+            font-style: normal;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Brawl Grind Optimizer</h1>
+    <p class="subtitle">Découvre qui jouer et comment monter tes trophées facilement</p>
+
+    <div class="search-box">
+        <input type="text" id="playerTag" placeholder="Ex: #2G02UU0" value="#">
+        <button onclick="analyserProfil()">Optimiser</button>
+    </div>
+
+    <div id="loader">Analyse du compte en cours...</div>
+
+    <div id="suggestions">
+        </div>
+
+    <script>
+        // URL de ton Cloudflare Worker configurée
+        const WORKER_URL = "https://tark.alex-usagi84.workers.dev/"; 
+
+        async function analyserProfil() {
+            let tag = document.getElementById('playerTag').value.trim();
+            
+            // Nettoyage du tag (on enlève le # pour l'envoyer proprement)
+            tag = tag.replace('#', '');
+
+            if (!tag) {
+                alert("Mets un tag de joueur valide !");
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            const suggestionsDiv = document.getElementById('suggestions');
+            
+            suggestionsDiv.innerHTML = '';
+            loader.style.display = 'block';
+
+            try {
+                // Appel à ton worker. Note: Ajuste cette ligne si ton worker requiert un format spécifique (ex: `${WORKER_URL}?tag=${tag}`)
+                const response = await fetch(`${WORKER_URL}${tag}`);
+                
+                if (!response.ok) {
+                    throw new Error("Impossible de récupérer les données du joueur.");
+                }
+
+                const data = await response.json();
+                const brawlers = data.brawlers;
+
+                loader.style.display = 'none';
+
+                if (!brawlers || brawlers.length === 0) {
+                    suggestionsDiv.innerHTML = "<p>Aucun brawler trouvé ou profil introuvable.</p>";
+                    return;
+                }
+
+                brawlers.forEach(brawler => {
+                    let objectifTrophees = brawler.trophies;
+                    let difficulte = "Normal";
+                    let conseilMap = "Tous modes";
+
+                    // Algorithme de recommandation de Grind
+                    if (brawler.power >= 10 && brawler.trophies < 750) {
+                        objectifTrophees = 750;
+                        difficulte = "Facile (Brawler Maxé)";
+                    } else if (brawler.power >= 7 && brawler.trophies < 500) {
+                        objectifTrophees = 500;
+                        difficulte = "Très Facile (Basse ligue)";
+                    } else if (brawler.trophies >= 750) {
+                        objectifTrophees = brawler.trophies + 50;
+                        difficulte = "Difficile (High Elo)";
+                    } else {
+                        objectifTrophees = brawler.trophies + 50;
+                        difficulte = "Moyenne";
+                    }
+
+                    // Conseils basiques selon les archétypes de brawlers
+                    const brawlerName = brawler.name.toUpperCase();
+                    if (["SHELLY", "BULL", "EDGAR", "EL PRIMO", "DARRYL", "FANG"].includes(brawlerName)) {
+                        conseilMap = "Survivant Solo ou Brawl Ball (Maps fermées)";
+                    } else if (["COLT", "PIPER", "ANGELO", "BELLE", "BROCK"].includes(brawlerName)) {
+                        conseilMap = "Prime, Hors-jeu ou Zone Réservée (Maps ouvertes)";
+                    } else if (["BARLEY", "DYNAMIKE", "TICK", "GROM"].includes(brawlerName)) {
+                        conseilMap = "Braquage ou Zone Réservée (Derrière les murs)";
+                    } else {
+                        conseilMap = "Brawl Ball ou Razzia de Gemmes";
+                    }
+
+                    suggestionsDiv.innerHTML += `
+                        <div class="brawler-card">
+                            <h3>${brawler.name}</h3>
+                            <p>🏆 Trophées actuels : <strong>${brawler.trophies}</strong></p>
+                            <p>🎯 Objectif atteignable : <strong>${objectifTrophees} 🏆</strong></p>
+                            <p>⚡ Difficulté estimée : <strong>${difficulte}</strong></p>
+                            <p>📍 Mode conseillé : <em>${conseilMap}</em></p>
+                        </div>
+                    `;
+                });
+
+            } catch (error) {
+                loader.style.display = 'none';
+                alert("Erreur lors de la récupération des données. Vérifie ton tag ou l'état de ton Worker.");
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+  </html>
+
