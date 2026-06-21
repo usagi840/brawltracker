@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Brawl Stars - Grind Optimizer</title>
+  <title>Brawl Stars - Trophy Wishlist</title>
   <style>
-    /* Style sombre et léger inspiré de ton Tracker */
     :root {
       --bg: #121212;
       --card-bg: #1e1e1e;
@@ -13,7 +12,7 @@
       --text: #ffffff;
       --text-muted: #aaaaaa;
       --green: #00ffcc;
-      --red: #ff6666;
+      --border: #333333;
     }
 
     body {
@@ -46,10 +45,11 @@
       text-align: center;
     }
 
+    /* Boîte de recherche */
     .search-box {
       display: flex;
       gap: 10px;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       width: 100%;
       max-width: 400px;
     }
@@ -59,7 +59,7 @@
       align-items: center;
       flex: 1;
       background-color: var(--card-bg);
-      border: 2px solid #333;
+      border: 2px solid var(--border);
       border-radius: 8px;
       padding-left: 12px;
     }
@@ -107,154 +107,331 @@
       margin-bottom: 20px;
     }
 
-    #suggestions {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    /* Compteur Global Wishlist */
+    .wishlist-panel {
+      display: none;
+      background: linear-gradient(135deg, #1e1e1e, #292929);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 15px 25px;
+      width: 100%;
+      max-width: 950px;
+      margin-bottom: 30px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    }
+
+    .wishlist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .wishlist-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 0;
+    }
+
+    .wishlist-stats {
+      display: flex;
       gap: 20px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      display: block;
+    }
+
+    .stat-val {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .stat-val.gain {
+      color: var(--green);
+    }
+
+    /* Grille de Brawlers */
+    #brawlersGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 15px;
       width: 100%;
       max-width: 1000px;
     }
 
     .brawler-card {
       background-color: var(--card-bg);
-      padding: 20px;
-      border-radius: 12px;
-      border-left: 6px solid var(--accent);
-      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, transform 0.2s;
     }
 
-    .brawler-card h3 {
-      margin-top: 0;
+    .brawler-card.in-wishlist {
+      border-color: var(--accent);
+      background-color: #252522;
+      transform: translateY(-2px);
+    }
+
+    .brawler-name {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0 0 10px 0;
+      color: var(--text);
+    }
+
+    .brawler-card.in-wishlist .brawler-name {
       color: var(--accent);
-      font-size: 20px;
-      letter-spacing: 1px;
     }
 
-    .brawler-card p {
-      margin: 8px 0;
-      font-size: 14px;
+    .brawler-info {
+      font-size: 13px;
       color: #dddddd;
+      margin-bottom: 12px;
     }
 
-    .brawler-card strong {
+    /* Contrôleurs d'objectifs */
+    .goal-controls {
+      display: none;
+      background: rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brawler-card.in-wishlist .goal-controls {
+      display: flex;
+    }
+
+    .goal-btn {
+      background: #333;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .goal-btn:hover {
+      background: #444;
+    }
+
+    .goal-display {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .goal-display span {
       color: var(--green);
     }
 
-    .brawler-card em {
-      color: var(--red);
-      font-style: normal;
-      font-weight: bold;
+    .btn-action {
+      width: 100%;
+      padding: 8px;
+      font-size: 12px;
+      border-radius: 6px;
+      background-color: #333;
+      color: white;
+    }
+
+    .brawler-card.in-wishlist .btn-action {
+      background-color: #ff4444;
+      color: white;
     }
   </style>
 </head>
 <body>
 
-    <div class="brand">Brawl<span>Optimizer</span></div>
-    <p class="subtitle">Analyse tes brawlers pour savoir qui jouer et jusqu'où les monter</p>
+    <div class="brand">Trophy<span>Wishlist</span></div>
+    <p class="subtitle">Planifie tes prochains objectifs de trophées par brawler</p>
 
     <div class="search-box">
         <div class="input-prefix-wrap">
             <span class="input-prefix">#</span>
             <input type="text" id="playerTag" placeholder="XXXXXX" autocomplete="off">
         </div>
-        <button onclick="analyserProfil()">Optimiser</button>
+        <button onclick="chargerProfil()">Charger</button>
     </div>
 
-    <div id="loader">🔄 Connexion à l'API Brawl Stars...</div>
+    <div id="loader">🔄 Récupération de tes brawlers...</div>
 
-    <div id="suggestions">
+    <div class="wishlist-panel" id="wishlistPanel">
+        <div class="wishlist-header">
+            <p class="wishlist-title">📋 Plan de Session</p>
+            <div class="wishlist-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Brawlers ciblés</span>
+                    <span class="stat-val" id="totalBrawlersCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Trophées actuels</span>
+                    <span class="stat-val" id="totalCurrentTr">—</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Gain planifié</span>
+                    <span class="stat-val gain" id="totalGainTr">+0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Nouveau Total virtuel</span>
+                    <span class="stat-val" id="totalVirtualTr" style="color: var(--accent);">—</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="brawlersGrid">
         </div>
 
     <script>
         const BS_WORKER = 'https://tark.alex-usagi84.workers.dev/';
+        
+        let localBrawlers = []; // Stocke la liste complète des brawlers du joueur
+        let wishlist = {};      // Structure: { brawlerId/Name: objectifTrophees }
+        let baseTotalTrophies = 0;
 
-        // Nettoyage identique à ton script d'origine
         function cleanTag(raw) {
             return raw.replace(/^#/, '').toUpperCase().replace(/O/g, '0').replace(/[^A-Z0-9]/g, '');
         }
 
-        async function analyserProfil() {
+        async function chargerProfil() {
             const rawTag = document.getElementById('playerTag').value.trim();
             const tag = cleanTag(rawTag);
 
             if (tag.length < 3) {
-                alert("Tag trop court !");
+                alert("Tag invalide ou trop court.");
                 return;
             }
 
             const loader = document.getElementById('loader');
-            const suggestionsDiv = document.getElementById('suggestions');
+            const grid = document.getElementById('brawlersGrid');
+            const panel = document.getElementById('wishlistPanel');
             
-            suggestionsDiv.innerHTML = '';
+            grid.innerHTML = '';
+            panel.style.display = 'none';
             loader.style.display = 'block';
+            wishlist = {}; // Reset de la wishlist précédente
 
             try {
-                // On utilise la structure exacte de ton fetch fonctionnel : ?tag=TAG
                 const url = `${BS_WORKER}?tag=${encodeURIComponent(tag)}`;
                 const response = await fetch(url, { headers: { Accept: 'application/json' } });
                 
-                if (!response.ok) {
-                    throw new Error('Impossible de joindre l\'API.');
-                }
+                if (!response.ok) throw new Error('Erreur API');
 
                 const data = await response.json();
-                const brawlers = data.brawlers;
+                localBrawlers = data.brawlers || [];
+                baseTotalTrophies = data.trophies || 0;
 
                 loader.style.display = 'none';
 
-                if (!brawlers || brawlers.length === 0) {
-                    suggestionsDiv.innerHTML = "<p>Aucun brawler trouvé sur ce compte.</p>";
+                if (localBrawlers.length === 0) {
+                    grid.innerHTML = "<p>Aucun brawler trouvé.</p>";
                     return;
                 }
 
-                brawlers.forEach(brawler => {
-                    let objectifTrophees = brawler.trophies;
-                    let difficulte = "Normale";
-                    let conseilMap = "Tous modes";
+                // Tri alphabétique ou par trophées décroissants
+                localBrawlers.sort((a, b) => b.trophies - a.trophies);
 
-                    // Algorithme d'optimisation selon le niveau de pouvoir
-                    if (brawler.power >= 10 && brawler.trophies < 750) {
-                        objectifTrophees = 750;
-                        difficulte = "Facile (Brawler Maxé)";
-                    } else if (brawler.power >= 7 && brawler.trophies < 500) {
-                        objectifTrophees = 500;
-                        difficulte = "Très Facile (Basse ligue)";
-                    } else if (brawler.trophies >= 750) {
-                        objectifTrophees = brawler.trophies + 50;
-                        difficulte = "Difficile (High Elo)";
-                    } else {
-                        objectifTrophees = brawler.trophies + 50;
-                        difficulte = "Moyenne";
-                    }
-
-                    // Recommandations selon les archétypes
-                    const brawlerName = brawler.name.toUpperCase();
-                    if (["SHELLY", "BULL", "EDGAR", "EL PRIMO", "DARRYL", "FANG"].includes(brawlerName)) {
-                        conseilMap = "Survivant Solo ou Brawl Ball (Maps fermées)";
-                    } else if (["COLT", "PIPER", "ANGELO", "BELLE", "BROCK"].includes(brawlerName)) {
-                        conseilMap = "Prime, Hors-jeu ou Zone Réservée (Maps ouvertes)";
-                    } else if (["BARLEY", "DYNAMIKE", "TICK", "GROM"].includes(brawlerName)) {
-                        conseilMap = "Braquage ou Zone Réservée (Murs)";
-                    } else {
-                        conseilMap = "Brawl Ball ou Razzia de Gemmes";
-                    }
-
-                    suggestionsDiv.innerHTML += `
-                        <div class="brawler-card">
-                            <h3>${brawler.name}</h3>
-                            <p>🏆 Trophées actuels : <strong>${brawler.trophies}</strong> (Pouvoir ${brawler.power})</p>
-                            <p>🎯 Objectif conseillé : <strong>${objectifTrophees} 🏆</strong></p>
-                            <p>⚡ Difficulté : <strong>${difficulte}</strong></p>
-                            <p>📍 Où le jouer : <em>${conseilMap}</em></p>
-                        </div>
-                    `;
-                });
+                panel.style.display = 'block';
+                renderGrid();
+                updateGlobalStats();
 
             } catch (error) {
                 loader.style.display = 'none';
-                suggestionsDiv.innerHTML = "<p style='color: var(--red);'>Erreur de récupération. Vérifie ton tag ou l'état du Worker.</p>";
+                alert("Erreur lors du chargement. Vérifie ton tag.");
                 console.error(error);
             }
+        }
+
+        function renderGrid() {
+            const grid = document.getElementById('brawlersGrid');
+            grid.innerHTML = '';
+
+            localBrawlers.forEach((brawler, index) => {
+                const name = brawler.name;
+                const currentTr = brawler.trophies;
+                const inWishlist = wishlist[name] !== undefined;
+                const targetTr = inWishlist ? wishlist[name] : currentTr;
+
+                const card = document.createElement('div');
+                card.className = `brawler-card ${inWishlist ? 'in-wishlist' : ''}`;
+                
+                card.innerHTML = `
+                    <div>
+                        <p class="brawler-name">${name}</p>
+                        <div class="brawler-info">
+                            🏆 Actuel : <strong>${currentTr}</strong><br>
+                            ⚡ Pouvoir : ${brawler.power}
+                        </div>
+                        <div class="goal-controls">
+                            <button class="goal-btn" onclick="adjustGoal('${name}', -25)">-</button>
+                            <div class="goal-display">Cible: <span>${targetTr}</span></div>
+                            <button class="goal-btn" onclick="adjustGoal('${name}', 25)">+</button>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="toggleWishlist('${name}', ${currentTr})">
+                        ${inWishlist ? 'Retirer du plan' : 'Ajouter au plan'}
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function toggleWishlist(name, currentTr) {
+            if (wishlist[name] !== undefined) {
+                delete wishlist[name];
+            } else {
+                // Par défaut, l'objectif s'aligne au palier supérieur de +25 ou +50 trophées
+                wishlist[name] = currentTr + 50;
+            }
+            renderGrid();
+            updateGlobalStats();
+        }
+
+        function adjustGoal(name, amount) {
+            if (wishlist[name] === undefined) return;
+            
+            const brawler = localBrawlers.find(b => b.name === name);
+            if (!brawler) return;
+
+            // Ne pas descendre en dessous des trophées actuels
+            if (wishlist[name] + amount >= brawler.trophies) {
+                wishlist[name] += amount;
+                renderGrid();
+                updateGlobalStats();
+            }
+        }
+
+        function updateGlobalStats() {
+            let totalGain = 0;
+            let count = 0;
+
+            localBrawlers.forEach(b => {
+                if (wishlist[b.name] !== undefined) {
+                    totalGain += (wishlist[b.name] - b.trophies);
+                    count++;
+                }
+            });
+
+            document.getElementById('totalBrawlersCount').textContent = count;
+            document.getElementById('totalCurrentTr').textContent = baseTotalTrophies.toLocaleString('fr-FR');
+            document.getElementById('totalGainTr').textContent = `+${totalGain.toLocaleString('fr-FR')}`;
+            document.getElementById('totalVirtualTr').textContent = (baseTotalTrophies + totalGain).toLocaleString('fr-FR');
         }
     </script>
 </body>
